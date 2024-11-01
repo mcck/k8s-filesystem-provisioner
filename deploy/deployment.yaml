@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filesystem-provisioner
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: filesystem-provisioner
+  template:
+    metadata:
+      labels:
+        app: filesystem-provisioner
+    spec:
+      serviceAccountName: filesystem-provisioner
+      containers:
+      - name: filesystem-provisioner
+        image: registry.cn-hangzhou.aliyuncs.com/hyj-project/filesystem-provisioner:amd-v1
+        volumeMounts:
+        - name: provisioner-root
+          # 必须挂载此目录
+          mountPath: /persistentvolumes
+        env:
+        - name: PROVISIONER_NAME
+          value: filesystem-provisioner
+          # POD创建后会运行在任意一个主机上，需要保证这个主机已存在指定的目录
+        - name: HOST_DIR
+          value: [在主机上的目录]
+      volumes:
+      - name: provisioner-root
+        # 需要设置挂载到 filesystem-provisioner 中的路径

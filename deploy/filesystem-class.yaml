@@ -1,0 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: filesystem-class
+  namespace: default
+# 与deployment.yaml中环境变量 PROVISIONER_NAME 一样
+provisioner: filesystem-provisioner
+parameters:
+  reclaimPolicy: "archive"
+  pvPathTemplate: "{namespace}/{pvcName}-{pvName}"
+allowVolumeExpansion: true
+#reclaimPolicy: Retain

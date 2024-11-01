@@ -1,0 +1,92 @@
+# 测试
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: filesystem-test
+  namespace: default
+spec:
+  storageClassName: filesystem-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Mi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: mysql-deployment-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-deployment
+  template:
+    metadata:
+      labels:
+        app: mysql-deployment
+    spec:
+      containers:
+      - image: hub.app.ht/forest-platform-02/mysql:8.0.3
+        name: mysql
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "xxxxx"
+        ports:
+        - name: mysql
+          containerPort: 3306
+          protocol: TCP
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: filesystem-test
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: default
+  name: mysql-statefulset-test
+spec:
+  selector:
+    matchLabels:
+      app: mysql-statefulset
+  template:
+    metadata:
+      labels:
+        app: mysql-statefulset
+    spec:
+      containers:
+      - image: hub.app.ht/forest-platform-02/mysql:8.0.3
+        imagePullPolicy: IfNotPresent
+        name: mysql
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "xxxxx"
+        ports:
+        - name: mysql
+          containerPort: 3306
+          protocol: TCP
+  volumeClaimTemplates:
+  - kind: PersistentVolumeClaim
+    apiVersion: v1
+    metadata:
+      name: mysql-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: filesystem-class
+      volumeMode: Filesystem
+  serviceName: mysql-statefulset
+
