@@ -41,7 +41,7 @@ type hostProvisioner struct {
 }
 
 var pathPattern = regexp.MustCompile(`\{([^}]+)\}`)
-var hostType = v1.HostPathDirectoryOrCreate
+var hostType = v1.HostPathDirectory
 
 func getPvPath(pvPathTemplate string, variables map[string]string) (string, error) {
 	result := pathPattern.FindAllStringSubmatch(pvPathTemplate, -1)
@@ -160,7 +160,7 @@ func (p *hostProvisioner) Delete(ctx context.Context, volume *v1.PersistentVolum
 	logPrefix := "【PVC: " + pvcNamespace + "/" + pvcName + "】"
 
 	if _, err := os.Stat(oldPath); os.IsNotExist(err) {
-		glog.Warningf("%s path %s does not exist, deletion skipped", logPrefix, oldPath)
+		glog.Warningf("%s path %s pv路径不存在", logPrefix, oldPath)
 		return nil
 	}
 	// Get the storage class for this volume.
